@@ -10,8 +10,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Login to GitHub Container Registry (manual)
-        run: echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+      - name: Login to GitHub Container Registry (safe login)
+        run: |
+          mkdir -p /tmp/.docker
+          echo '{"auths":{},"credsStore":""}' > /tmp/.docker/config.json
+          echo "${{ secrets.CR_PAT }}" | DOCKER_CONFIG=/tmp/.docker docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Build and push Docker image
